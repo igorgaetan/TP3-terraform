@@ -1,0 +1,40 @@
+# ==============================================================================
+# TERRAFORM
+# ==============================================================================
+# Ignorer le dossier de travail local de Terraform (contient les providers et modules)
+.terraform/
+
+# Ignorer les fichiers d'état locaux (Puisque tu utilises désormais un backend S3 !)
+*.tfstate
+*.tfstate.*
+
+# Ignorer les fichiers de variables contenant potentiellement des secrets/mots de passe
+*.tfvars
+*.tfvars.json
+
+# Ignorer les variables d'environnement lues automatiquement par Terraform
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ignorer les fichiers de logs Terraform en cas de crash ou de débug
+crash.log
+*.log
+
+# Ignorer le fichier de lock du CLI (optionnel, mais recommandé si tu changes souvent d'OS/plateforme)
+# Note : Certains préfèrent le commit pour figer les versions de providers (.terraform.lock.hcl).
+# Dans ton cadre de TP, tu peux le laisser ou l'ignorer. Si tu veux le garder dans Git, commente la ligne suivante :
+.terraform.lock.hcl
+
+# ==============================================================================
+# SYSTÈME / ÉDITEURS (WSL, Ubuntu, VS Code)
+# ==============================================================================
+.vscode/
+.history/
+*.diff
+*.patch
+
+# Fichiers système spécifiques
+.DS_Store
+Thumbs.db

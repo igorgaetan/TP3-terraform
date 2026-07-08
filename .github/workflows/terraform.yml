@@ -1,0 +1,73 @@
+name: Terraform CI/CD
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Action à exécuter"
+        required: true
+        default: "plan"
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  TF_IN_AUTOMATION: "true"
+
+jobs:
+  terraform:
+    name: Terraform ${{ github.event.inputs.action || 'plan/apply' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tp-terraform
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Configurer les identifiants AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Installer Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.10.0"
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Format Check
+        run: terraform fmt -check
+        continue-on-error: true
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      # ── Cas 1 : Pull Request → juste un plan, pas d'apply ──────
+      - name: Terraform Plan
+        if: github.event_name == 'pull_request' || github.event.inputs.action == 'plan'
+        run: terraform plan -no-color
+
+      # ── Cas 2 : Push sur main, ou déclenchement manuel "apply" ──
+      - name: Terraform Apply
+        if: >
+          (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+          github.event.inputs.action == 'apply'
+        run: terraform apply -auto-approve
+
+      # ── Cas 3 : Déclenchement manuel "destroy" uniquement ───────
+      - name: Terraform Destroy
+        if: github.event.inputs.action == 'destroy'
+        run: terraform destroy -auto-approve
