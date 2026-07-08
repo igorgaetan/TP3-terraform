@@ -13,7 +13,7 @@ resource "aws_instance" "cette_instance" {
   )
 
   lifecycle {
-    prevent_destroy        = true
+    prevent_destroy        = false
     create_before_destroy   = true
     ignore_changes          = [ami] # une mise à jour d'AMI ne doit pas recréer l'instance automatiquement
   }
